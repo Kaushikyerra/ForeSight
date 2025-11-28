@@ -1,0 +1,233 @@
+/* Updated styles.css
+   Source file: /mnt/data/styles.css
+   Changes: Added Tech Loader animations and classes (rotating rings, gradient stroke, radar scanner) at top.
+*/
+
+/* Tech Loader Styles */
+.loader-container {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* The detailed circuit rings */
+.tech-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    mask: radial-gradient(transparent 60%, black 65%);
+    -webkit-mask: radial-gradient(transparent 60%, black 65%);
+}
+
+/* Rotation Animation */
+@keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+@keyframes spin-reverse {
+    from { transform: rotate(360deg); }
+    to { transform: rotate(0deg); }
+}
+
+.animate-spin-slow { animation: spin-slow 10s linear infinite; }
+.animate-spin-reverse { animation: spin-reverse 15s linear infinite; }
+
+/* The Blue-to-Red Gradient Stroke */
+.gradient-stroke {
+    background: conic-gradient(from 180deg, #3b82f6 0%, #3b82f6 40%, transparent 50%, #ef4444 60%, #ef4444 100%);
+    border-radius: 50%;
+    opacity: 0.8;
+}
+
+/* The Radar Scanner Line */
+.scanner-line {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 50%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #ef4444);
+    transform-origin: 0% 0%;
+    animation: scan 4s linear infinite;
+    box-shadow: 0 0 15px #ef4444;
+    z-index: 10;
+}
+
+@keyframes scan {
+    0% { transform: rotate(0deg); opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { transform: rotate(360deg); opacity: 0; }
+}
+
+/* Glitch text effect for the number */
+.tech-text {
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+/* ------------------------------------------------------------------ */
+/* Existing styles (preserved and merged) */
+:root {
+  --background: 0 0% 5%;
+  --foreground: 0 0% 98%;
+  --card: 0 0% 8%;
+  --card-foreground: 0 0% 98%;
+  --popover: 0 0% 8%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 0 72% 51%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 0 0% 15%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 0 0% 15%;
+  --muted-foreground: 0 0% 70%;
+  --accent: 0 72% 51%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 62% 30%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 0 0% 20%;
+  --input: 0 0% 15%;
+  --ring: 0 72% 51%;
+  --radius: 0.625rem;
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+.font-orbitron {
+  font-family: "Orbitron", sans-serif;
+}
+
+.font-mono {
+  font-family: "Space Mono", monospace;
+}
+
+.fade-in {
+  animation: fadeIn 0.8s ease-out forwards;
+  opacity: 0;
+}
+
+.fade-in-subtitle {
+  animation: fadeInSubtitle 1s ease-out forwards;
+  opacity: 0;
+}
+
+.slide-up {
+  animation: slideUp 0.8s ease-out forwards;
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.glow-border {
+  position: relative;
+  border: 1px solid transparent;
+  background: linear-gradient(hsl(var(--card)), hsl(var(--card))) padding-box,
+    linear-gradient(45deg, hsl(var(--primary)), hsl(var(--accent))) border-box;
+  border-radius: var(--radius);
+}
+
+.pulse-button {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInSubtitle {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+/* Glitch Effect Styles */
+.glitch {
+    position: relative;
+    color: white;
+}
+
+.glitch::before,
+.glitch::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: black;
+}
+
+.glitch::before {
+    left: 2px;
+    text-shadow: -1px 0 #ff0000; /* Red shadow matching your theme */
+    clip-path: inset(24% 0 29% 0);
+    animation: glitch-anim-1 2.5s infinite linear alternate-reverse;
+}
+
+.glitch::after {
+    left: -2px;
+    text-shadow: -1px 0 #00ffff; /* Cyan offset for contrast */
+    clip-path: inset(85% 0 1% 0);
+    animation: glitch-anim-2 3s infinite linear alternate-reverse;
+}
+
+@keyframes glitch-anim-1 {
+    0% { clip-path: inset(80% 0 2% 0); }
+    20% { clip-path: inset(20% 0 60% 0); }
+    40% { clip-path: inset(50% 0 30% 0); }
+    60% { clip-path: inset(10% 0 80% 0); }
+    80% { clip-path: inset(40% 0 10% 0); }
+    100% { clip-path: inset(90% 0 5% 0); }
+}
+
+@keyframes glitch-anim-2 {
+    0% { clip-path: inset(10% 0 80% 0); }
+    20% { clip-path: inset(80% 0 5% 0); }
+    40% { clip-path: inset(30% 0 60% 0); }
+    60% { clip-path: inset(70% 0 20% 0); }
+    80% { clip-path: inset(10% 0 40% 0); }
+    100% { clip-path: inset(50% 0 10% 0); }
+}
+
+/* Preserve formatting for the report text coming from Python */
+#modal-content {
+    white-space: pre-wrap; /* Keeps newlines and indentation */
+    line-height: 1.6;
+}

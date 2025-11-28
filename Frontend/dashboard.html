@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>ForenSight | Orchestrator Dashboard</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"/>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Geist', 'sans-serif'],
+                        mono: ['Space Mono', 'monospace'],
+                        orbitron: ['Orbitron', 'sans-serif'],
+                    },
+                    colors: {
+                        background: "hsl(0 0% 5%)",
+                        card: "hsl(0 0% 8%)",
+                        primary: "hsl(0 72% 51%)", 
+                        border: "hsl(0 0% 20%)",
+                    },
+                }
+            }
+        }
+    </script>
+
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="styles.css">
+    
+    <style>
+        /* Dashboard specific scrolls */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #111; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #cc0000; }
+        .small-chip { font-size: 11px; padding: 4px 8px }
+    </style>
+</head>
+<body class="bg-background text-gray-200 h-screen flex flex-col overflow-hidden selection:bg-red-500/30">
+
+    <!-- Top Navigation -->
+    <header class="h-16 border-b border-red-500/20 bg-black/90 backdrop-blur flex items-center justify-between px-6 shrink-0 z-50">
+        <div class="flex items-center gap-3">
+            <a href="index.html" class="hover:opacity-80 transition-opacity">
+                <i data-lucide="chevron-left" class="text-gray-400"></i>
+            </a>
+            <h1 class="font-orbitron text-xl font-bold text-white">
+                Foren<span class="text-red-500">Sight</span> <span class="text-xs text-gray-500 ml-2 border border-gray-800 px-2 py-0.5 rounded">ORCHESTRATOR</span>
+            </h1>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2 text-xs font-mono text-green-500 bg-green-500/10 px-3 py-1 rounded-full">
+                <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                SYSTEM ONLINE
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="flex flex-1 overflow-hidden">
+        
+        <!-- Sidebar: Upload Area -->
+        <aside class="w-1/3 min-w-[350px] max-w-md border-r border-red-500/20 bg-card flex flex-col relative z-40">
+            <div class="p-6 flex flex-col h-full">
+                <h2 class="font-orbitron text-lg text-white mb-4 flex items-center gap-2">
+                    <i data-lucide="upload-cloud" class="text-red-500"></i> Input Stream
+                </h2>
+                
+                <!-- Drag Drop Zone -->
+                <div id="drop-zone" class="border-2 border-dashed border-gray-700 hover:border-red-500/50 bg-black/50 rounded-lg p-8 flex flex-col items-center justify-center text-center transition-all cursor-pointer group relative overflow-hidden">
+                    <!-- Hidden Input -->
+                    <input type="file" id="file-input" multiple class="hidden" accept="image/*,audio/*,video/*,.pdf,.txt,.docx">
+                    
+                    <div class="w-16 h-16 rounded-full bg-gray-900 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 border border-gray-700 group-hover:border-red-500">
+                        <i data-lucide="file-plus" class="w-8 h-8 text-gray-400 group-hover:text-red-500 transition-colors"></i>
+                    </div>
+                    <p class="font-mono text-sm text-gray-300 mb-2">Drag & drop evidence files</p>
+                    <p class="text-xs text-gray-500">Supports: Images, Audio, Video, Documents</p>
+                </div>
+
+                <!-- Instructions input for meta agent -->
+                <label class="block mt-4 text-xs text-gray-400 font-mono">Instructions / priorities (e.g. "prioritize transcript and video frames")</label>
+                <textarea id="user-instructions" rows="3" class="mt-1 w-full bg-black/40 border border-gray-800 rounded p-2 text-sm text-gray-200 font-mono" placeholder="Type what you'd like the Meta Agent to prioritize or check..."></textarea>
+
+                <!-- File List -->
+                <div class="mt-4 flex-1 overflow-y-auto space-y-3" id="file-list">
+                    <div class="text-center text-gray-600 text-sm font-mono mt-10 italic" id="empty-state">
+                        No files queued for analysis
+                    </div>
+                </div>
+
+                <!-- Action Button -->
+                <div class="mt-4 pt-6 border-t border-gray-800">
+                    <div class="flex gap-3">
+                        <button id="analyze-btn" disabled class="flex-1 bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-orbitron font-bold py-3 rounded shadow-[0_0_15px_rgba(220,38,38,0.4)] transition-all items-center justify-center gap-2">
+                            <span>INITIATE SCAN</span>
+                            <i data-lucide="activity" class="w-4 h-4"></i>
+                        </button>
+                        <button id="sample-btn" title="Send server-local sample path (developer mode)" class="w-12 bg-gray-800 hover:bg-gray-700 rounded text-gray-300 flex items-center justify-center">
+                            <i data-lucide="bolt" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">Tip: you can write instructions for the Meta Agent. The dashboard will send files + instructions to the server.</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content: Results -->
+        <main class="flex-1 bg-background relative overflow-y-auto overflow-x-hidden p-8">
+            <!-- Background Grid -->
+            <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: linear-gradient(#333 1px, transparent 1px), linear-gradient(90deg, #333 1px, transparent 1px); background-size: 40px 40px;"></div>
+
+            <!-- Intro / Status -->
+            <div id="dashboard-intro" class="h-full flex flex-col items-center justify-center text-center opacity-50">
+                <i data-lucide="shield-alert" class="w-24 h-24 text-gray-700 mb-6"></i>
+                <h3 class="text-2xl font-orbitron text-gray-500">Awaiting Analysis Data</h3>
+                <p class="font-mono text-sm text-gray-600 mt-2">Upload evidence to begin forensic breakdown</p>
+            </div>
+
+            <!-- Loading Overlay -->
+            <div id="loader" class="hidden absolute inset-0 bg-black/95 z-50 flex flex-col items-center justify-center backdrop-blur-md">
+                <div class="loader-container relative w-80 h-80">
+                    <svg class="absolute inset-0 w-full h-full animate-spin-slow" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+                        <circle cx="50" cy="50" r="48" fill="none" stroke="#333" stroke-width="1" stroke-dasharray="1 2" />
+                        <path d="M 50 10 A 40 40 0 0 0 10 50" fill="none" stroke="#3b82f6" stroke-width="2" stroke-dasharray="10 5" class="opacity-80" />
+                        <path d="M 50 15 A 35 35 0 0 0 15 50" fill="none" stroke="#3b82f6" stroke-width="1" stroke-dasharray="3 3" class="opacity-60" />
+                        <path d="M 50 90 A 40 40 0 0 0 90 50" fill="none" stroke="#ef4444" stroke-width="2" stroke-dasharray="10 5" class="opacity-80" />
+                        <path d="M 50 85 A 35 35 0 0 0 85 50" fill="none" stroke="#ef4444" stroke-width="1" stroke-dasharray="3 3" class="opacity-60" />
+                    </svg>
+
+                    <div class="absolute inset-0 flex flex-col items-center justify-center z-20 bg-black/50 rounded-full m-8 backdrop-blur-sm border border-gray-800 shadow-[inset_0_0_20px_rgba(0,0,0,0.8)]">
+                        <div class="font-orbitron text-4xl font-bold text-white tech-text tracking-wider" id="progress-percent">0%</div>
+                        <div class="font-mono text-[10px] text-blue-400 mt-1 uppercase tracking-widest">Processing</div>
+                        <div id="loading-text" class="text-xs text-red-400 mt-3">Initializing Forensic Agents...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Container -->
+            <div id="results-container" class="hidden max-w-6xl mx-auto space-y-8 relative z-10">
+                <!-- Summary Card -->
+                <div class="bg-card border border-red-500/30 rounded-lg p-6 relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-red-600"></div>
+                    <h3 class="font-orbitron text-lg text-white mb-2 flex items-center gap-2">
+                        <i data-lucide="file-text" class="text-red-500"></i> Mission Report
+                    </h3>
+                    <p id="overall-summary" class="font-mono text-sm text-gray-300 leading-relaxed">
+                        <!-- Summary text goes here -->
+                    </p>
+
+                    <div class="mt-4 flex gap-3 items-center">
+                        <div id="proof-hash" class="text-xs text-gray-400 font-mono"></div>
+                        <div id="blockchain-status" class="text-xs text-gray-400 font-mono"></div>
+                    </div>
+                </div>
+
+                <!-- Opinions + Entities row -->
+                <div class="grid grid-cols-3 gap-6">
+                    <div class="col-span-2 space-y-4">
+                        <div class="bg-card border border-gray-800 rounded-lg p-4">
+                            <h4 class="font-orbitron text-sm text-white mb-2">Agent Opinions</h4>
+                            <div id="opinions-list" class="space-y-3 text-sm text-gray-300 font-mono">
+                                <!-- Opinions injected here -->
+                            </div>
+                        </div>
+
+                        <div class="bg-card border border-gray-800 rounded-lg p-4">
+                            <h4 class="font-orbitron text-sm text-white mb-2">Evidence Grid</h4>
+                            <div id="evidence-grid" class="space-y-4">
+                                <!-- evidence cards -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="bg-card border border-gray-800 rounded-lg p-4 h-56 overflow-auto">
+                            <h4 class="font-orbitron text-sm text-white mb-2">Entities</h4>
+                            <ul id="entities-list" class="text-sm text-gray-300 font-mono space-y-1">
+                                <!-- entities -->
+                            </ul>
+                        </div>
+
+                        <div class="bg-card border border-gray-800 rounded-lg p-4 h-56 overflow-auto">
+                            <h4 class="font-orbitron text-sm text-white mb-2">Relations</h4>
+                            <ul id="relations-list" class="text-sm text-gray-300 font-mono space-y-2">
+                                <!-- relations -->
+                            </ul>
+                        </div>
+
+                        <!-- RAG Query Section -->
+                        <div class="bg-card border border-blue-500/30 rounded-lg p-4">
+                            <h4 class="font-orbitron text-sm text-white mb-2 flex items-center gap-2">
+                                <i data-lucide="search" class="text-blue-500"></i> RAG Intelligence
+                            </h4>
+                            <div class="space-y-3">
+                                <textarea id="rag-query" rows="3" class="w-full bg-black/40 border border-gray-800 rounded p-2 text-sm text-gray-200 font-mono" placeholder="Ask about forensic patterns, case similarities..."></textarea>
+                                <button id="rag-query-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-mono text-sm py-2 rounded transition-colors flex items-center justify-center gap-2">
+                                    <i data-lucide="brain" class="w-4 h-4"></i>
+                                    <span>Query Knowledge Base</span>
+                                </button>
+                                <div id="rag-result" class="hidden bg-black/40 border border-gray-800 rounded p-3 text-sm">
+                                    <div id="rag-answer" class="text-gray-300 font-mono mb-2"></div>
+                                    <div id="rag-sources" class="text-xs text-gray-500 font-mono"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Final Summary -->
+                <div class="bg-card border border-gray-800 rounded-lg p-6">
+                    <h4 class="font-orbitron text-sm text-white mb-2">Final Consolidated Summary</h4>
+                    <pre id="final-summary" class="text-sm text-gray-300 font-mono whitespace-pre-wrap"></pre>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>

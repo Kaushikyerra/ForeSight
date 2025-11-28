@@ -1,0 +1,32 @@
+fastapi
+uvicorn
+python-multipart
+
+# Blockchain / Web3
+web3==6.11.3
+
+# Environment variables
+python-dotenv
+
+# PDF + DOCX parsing
+pypdf
+python-docx
+
+# Google Gemini (Generative AI)
+google-generativeai
+
+# LangChain for RAG
+langchain
+langchain-google-genai
+langchain-community
+chromadb
+
+# Image & Audio handling
+Pillow
+pydub
+
+# Requests & network utilities
+requests
+
+# Optional: CORS if your frontend calls FastAPI
+fastapi[all]

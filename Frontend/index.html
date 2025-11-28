@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>ForenSight - AI Misinformation Forensics</title>
+    <meta name="description" content="Advanced AI platform for detecting misinformation and deepfakes" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet"/>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Geist', 'sans-serif'],
+                        mono: ['Space Mono', 'monospace'],
+                        orbitron: ['Orbitron', 'sans-serif'],
+                    },
+                    colors: {
+                        border: "hsl(var(--border))",
+                        input: "hsl(var(--input))",
+                        ring: "hsl(var(--ring))",
+                        background: "hsl(var(--background))",
+                        foreground: "hsl(var(--foreground))",
+                        primary: {
+                            DEFAULT: "hsl(var(--primary))",
+                            foreground: "hsl(var(--primary-foreground))",
+                        },
+                        secondary: {
+                            DEFAULT: "hsl(var(--secondary))",
+                            foreground: "hsl(var(--secondary-foreground))",
+                        },
+                        destructive: {
+                            DEFAULT: "hsl(var(--destructive))",
+                            foreground: "hsl(var(--destructive-foreground))",
+                        },
+                        muted: {
+                            DEFAULT: "hsl(var(--muted))",
+                            foreground: "hsl(var(--muted-foreground))",
+                        },
+                        accent: {
+                            DEFAULT: "hsl(var(--accent))",
+                            foreground: "hsl(var(--accent-foreground))",
+                        },
+                        popover: {
+                            DEFAULT: "hsl(var(--popover))",
+                            foreground: "hsl(var(--popover-foreground))",
+                        },
+                        card: {
+                            DEFAULT: "hsl(var(--card))",
+                            foreground: "hsl(var(--card-foreground))",
+                        },
+                    },
+                }
+            }
+        }
+    </script>
+
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        /* minimal inline styles used previously */
+        #preloader {
+            transition: opacity 0.9s ease, visibility 0.9s ease;
+        }
+        #preloader.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .glitch {
+            position: relative;
+            display: inline-block;
+            line-height: 1;
+        }
+        .glitch::before,
+        .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            pointer-events: none;
+            opacity: 0.7;
+            mix-blend-mode: screen;
+            transform: translateZ(0);
+        }
+        .glitch::before {
+            color: #ff3b3b;
+            z-index: -1;
+            clip-path: polygon(0 0, 100% 0, 100% 45%, 0 40%);
+            animation: glitch-anim-1 2s infinite linear alternate-reverse;
+        }
+        .glitch::after {
+            color: #00e0ff;
+            z-index: -2;
+            clip-path: polygon(0 55%, 100% 50%, 100% 100%, 0 100%);
+            animation: glitch-anim-2 2.3s infinite linear alternate-reverse;
+        }
+        @keyframes glitch-anim-1 {
+            0% { transform: translate(-1px, -1px); }
+            50% { transform: translate(2px, -2px); }
+            100% { transform: translate(-1px, 1px); }
+        }
+        @keyframes glitch-anim-2 {
+            0% { transform: translate(1px, 1px); }
+            50% { transform: translate(-2px, 2px); }
+            100% { transform: translate(1px, -1px); }
+        }
+        
+        /* Pulse animation for the Start Analysis button */
+        @keyframes button-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        .hero-btn-pulse {
+            animation: button-pulse 2s infinite;
+        }
+    </style>
+
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-background text-foreground antialiased">
+
+    <div id="preloader" class="fixed inset-0 z-[10000] bg-black flex items-center justify-center transition-opacity duration-1000">
+        <div class="relative text-center px-6">
+            <h1 class="glitch text-4xl md:text-7xl font-bold font-orbitron text-white tracking-widest" data-text="ForenSIGHT">
+                ForenSIGHT
+            </h1>
+            <p class="text-red-500 font-mono text-xs md:text-sm text-center mt-4 tracking-[0.5em] animate-pulse">
+                SYSTEM INITIALIZING...
+            </p>
+        </div>
+    </div>
+
+    <nav class="fixed top-0 left-0 right-0 z-[9999] bg-black/95 backdrop-blur-md border-b border-red-500/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="font-orbitron text-xl font-bold text-white">
+                        Foren<span class="text-red-500">Sight</span>
+                    </h1>
+                </div>
+
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-8">
+                        <a href="#technology" class="font-sans text-white hover:text-red-500 transition-colors duration-200">Technology</a>
+                        <a href="#safety" class="font-sans text-white hover:text-red-500 transition-colors duration-200">Safety</a>
+                        <a href="#faq" class="font-sans text-white hover:text-red-500 transition-colors duration-200">FAQ</a>
+                    </div>
+                </div>
+
+                <div class="hidden md:block">
+                    <button class="bg-red-500 hover:bg-red-600 text-white font-sans font-medium py-2 px-4 rounded-md transition-colors">
+                        Login / Sign Up
+                    </button>
+                </div>
+
+                <div class="md:hidden">
+                    <button id="mobile-menu-btn" class="text-white hover:text-red-500 transition-colors duration-200">
+                        <i data-lucide="menu"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div id="mobile-menu" class="hidden md:hidden">
+                <div class="px-2 pt-2 pb-3 space-y-1 bg-black/98 border-t border-red-500/20">
+                    <a href="#technology" class="block px-3 py-2 font-sans text-white hover:text-red-500 transition-colors duration-200">Technology</a>
+                    <a href="#safety" class="block px-3 py-2 font-sans text-white hover:text-red-500 transition-colors duration-200">Safety</a>
+                    <a href="#faq" class="block px-3 py-2 font-sans text-white hover:text-red-500 transition-colors duration-200">FAQ</a>
+                    <div class="px-3 py-2">
+                        <button class="w-full bg-red-500 hover:bg-red-600 text-white font-sans font-medium py-2 px-4 rounded-md transition-colors">
+                            Login / Sign Up
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <div class="h-screen bg-black relative overflow-hidden" id="hero">
+            <div class="absolute inset-0 pointer-events-none z-10">
+                <div class="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black to-transparent"></div>
+                <div class="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent"></div>
+                <div class="absolute top-0 bottom-0 left-0 w-32 bg-gradient-to-r from-black to-transparent"></div>
+                <div class="absolute top-0 bottom-0 right-0 w-32 bg-gradient-to-l from-black to-transparent"></div>
+            </div>
+
+            <div class="h-screen uppercase items-center w-full absolute z-20 pointer-events-none px-10 flex justify-center flex-col">
+                <div class="text-3xl md:text-5xl xl:text-6xl 2xl:text-7xl font-extrabold font-orbitron text-center">
+                    <div class="flex space-x-2 lg:space-x-6 overflow-hidden text-white justify-center flex-wrap" id="hero-title">
+                        </div>
+                </div>
+                <div class="text-xs md:text-xl xl:text-2xl 2xl:text-3xl mt-2 overflow-hidden text-white font-bold max-w-4xl mx-auto text-center px-4">
+                    <div id="hero-subtitle" class="opacity-0">
+                        The future of misinformation detection technology.
+                    </div>
+                </div>
+
+                <div class="mt-10 opacity-0 animate-[fadeIn_1s_ease-out_1s_forwards] pointer-events-auto">
+                    <button id="start-analysis-btn" class="bg-red-500 hover:bg-red-600 text-white font-sans font-bold text-lg md:text-xl px-10 py-4 rounded-md transition-all duration-300 hover:scale-105 hero-btn-pulse shadow-[0_0_20px_rgba(239,68,68,0.5)]">
+                        Start Analysis
+                    </button>
+                </div>
+            </div>
+
+            <div id="canvas-container" class="w-full h-full"></div>
+        </div>
+
+        <section class="py-24 px-6 bg-background">
+            <div class="max-w-7xl mx-auto">
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl font-bold text-foreground mb-4 font-sans">Deep Forensics Features</h2>
+                    <p class="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+                        Uncover the truth with our multi-agent AI analysis system
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="features-grid">
+                    <div class="card glow-border hover:shadow-lg transition-all duration-300 slide-up" style="animation-delay: 0s;">
+                        <div class="p-6">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-3xl">🔊</span>
+                                <span class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-accent text-accent-foreground hover:bg-accent/80">AI-Agent</span>
+                            </div>
+                            <h3 class="text-xl font-bold text-card-foreground mb-2">Audio Forensics</h3>
+                            <p class="text-muted-foreground leading-relaxed">Spectral analysis agent capable of detecting voice cloning, synthetic generation, and splicing artifacts.</p>
+                        </div>
+                    </div>
+
+                    <div class="card glow-border hover:shadow-lg transition-all duration-300 slide-up" style="animation-delay: 0.1s;">
+                        <div class="p-6">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-3xl">📝</span>
+                                <span class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-accent text-accent-foreground hover:bg-accent/80">NLP</span>
+                            </div>
+                            <h3 class="text-xl font-bold text-card-foreground mb-2">Text Integrity Agent</h3>
+                            <p class="text-muted-foreground leading-relaxed">Identify LLM-generated content, check factual consistency, and detect narrative manipulation patterns.</p>
+                        </div>
+                    </div>
+
+                    <div class="card glow-border hover:shadow-lg transition-all duration-300 slide-up" style="animation-delay: 0.2s;">
+                        <div class="p-6">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-3xl">👁️</span>
+                                <span class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-accent text-accent-foreground hover:bg-accent/80">Visual</span>
+                            </div>
+                            <h3 class="text-xl font-bold text-card-foreground mb-2">Deepfake Detection</h3>
+                            <p class="text-muted-foreground leading-relaxed">Advanced GAN-based analysis to spot pixel-level irregularities, face swaps, and diffusion artifacts.</p>
+                        </div>
+                    </div>
+
+                    <div class="card glow-border hover:shadow-lg transition-all duration-300 slide-up" style="animation-delay: 0.3s;">
+                        <div class="p-6">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-3xl">🔗</span>
+                                <span class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-accent text-accent-foreground hover:bg-accent/80">Network</span>
+                            </div>
+                            <h3 class="text-xl font-bold text-card-foreground mb-2">Source Tracing</h3>
+                            <p class="text-muted-foreground leading-relaxed">Track the propagation of misinformation across networks to identify the original upload source.</p>
+                        </div>
+                    </div>
+
+                    <div class="card glow-border hover:shadow-lg transition-all duration-300 slide-up" style="animation-delay: 0.4s;">
+                        <div class="p-6">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-3xl">⚡</span>
+                                <span class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-accent text-accent-foreground hover:bg-accent/80">Live</span>
+                            </div>
+                            <h3 class="text-xl font-bold text-card-foreground mb-2">Real-Time Verification</h3>
+                            <p class="text-muted-foreground leading-relaxed">Instant cross-referencing of claims against trusted global fact-checking databases.</p>
+                        </div>
+                    </div>
+
+                    <div class="card glow-border hover:shadow-lg transition-all duration-300 slide-up" style="animation-delay: 0.5s;">
+                        <div class="p-6">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-3xl">📊</span>
+                                <span class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-accent text-accent-foreground hover:bg-accent/80">Report</span>
+                            </div>
+                            <h3 class="text-xl font-bold text-card-foreground mb-2">Forensic Reporting</h3>
+                            <p class="text-muted-foreground leading-relaxed">Generate detailed, court-admissible PDF reports outlining the probability of manipulation.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="technology"></section>
+
+        <section id="applications" class="py-20 bg-black">
+            <div class="max-w-7xl mx-auto px-4 md:px-8 lg:px-10">
+                <div class="text-center mb-16">
+                    <h2 class="font-orbitron text-3xl md:text-5xl font-bold text-white mb-6">Core Capabilities</h2>
+                    <p class="text-gray-300 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed font-mono">
+                       ForenSight employs a multi-modal approach to verify digital truth, securing media integrity across three primary domains.
+                    </p>
+                </div>
+
+                <div class="relative" id="timeline-container">
+                    <div class="absolute md:left-8 left-8 top-0 bottom-0 overflow-hidden w-[2px] bg-gradient-to-b from-transparent via-gray-700 to-transparent">
+                        <div id="timeline-progress" class="absolute inset-x-0 top-0 w-[2px] bg-gradient-to-t from-red-500 via-red-400 to-transparent rounded-full h-0"></div>
+                    </div>
+
+                    <div class="timeline-item flex justify-start pt-10 md:pt-40 md:gap-10">
+                        <div class="sticky flex flex-col md:flex-row z-40 items-center top-40 self-start max-w-xs lg:max-w-sm md:w-full">
+                            <div class="h-10 absolute left-3 md:left-3 w-10 rounded-full bg-black flex items-center justify-center border border-red-500">
+                                <div class="h-4 w-4 rounded-full bg-red-500 border border-red-400 p-2"></div>
+                            </div>
+                            <h3 class="hidden md:block text-xl md:pl-20 md:text-5xl font-bold text-red-500 font-orbitron">Audio Forensics</h3>
+                        </div>
+                        <div class="relative pl-20 pr-4 md:pl-4 w-full">
+                            <h3 class="md:hidden block text-2xl mb-4 text-left font-bold text-red-500 font-orbitron">Audio Forensics</h3>
+                            <div>
+                                <p class="text-white text-sm md:text-base font-normal mb-6 leading-relaxed">
+                                    Our specialized Audio Agent analyzes frequency distribution and spectral artifacts to distinguish between human speech and AI-synthesized voices.
+                                </p>
+                                <div class="space-y-3">
+                                    <div class="flex items-center gap-3 text-red-400 text-sm">
+                                        <div class="w-2 h-2 bg-red-500 rounded-full"></div>
+                                        Voice Cloning Detection
+                                    </div>
+                                    <div class="flex items-center gap-3 text-red-400 text-sm">
+                                        <div class="w-2 h-2 bg-red-500 rounded-full"></div>
+                                        Splice & Edit Identification
+                                    </div>
+                                    <div class="flex items-center gap-3 text-red-400 text-sm">
+                                        <div class="w-2 h-2 bg-red-500 rounded-full"></div>
+                                        Background Noise Consistency Check
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item flex justify-start pt-10 md:pt-40 md:gap-10">
+                        <div class="sticky flex flex-col md:flex-row z-40 items-center top-40 self-start max-w-xs lg:max-w-sm md:w-full">
+                            <div class="h-10 absolute left-3 md:left-3 w-10 rounded-full bg-black flex items-center justify-center border border-red-500">
+                                <div class="h-4 w-4 rounded-full bg-red-500 border border-red-400 p-2"></div>
+                            </div>
+                            <h3 class="hidden md:block text-xl md:pl-20 md:text-5xl font-bold text-red-500 font-orbitron">Text Analysis</h3>
+                        </div>
+                        <div class="relative pl-20 pr-4 md:pl-4 w-full">
+                            <h3 class="md:hidden block text-2xl mb-4 text-left font-bold text-red-500 font-orbitron">Text Analysis</h3>
+                            <div>
+                                <p class="text-white text-sm md:text-base font-normal mb-6 leading-relaxed">
+                                    The Text Integrity Agent processes written content to detect LLM hallucinations, factual inaccuracies, and coordinated bot behavior.
+                                </p>
+                                <div class="space-y-3">
+                                    <div class="flex items-center gap-3 text-red-400 text-sm">
+                                        <div class="w-2 h-2 bg-red-500 rounded-full"></div>
+                                        AI-Written Text Probability Score
+                                    </div>
+                                    <div class="flex items-center gap-3 text-red-400 text-sm">
+                                        <div class="w-2 h-2 bg-red-500 rounded-full"></div>
+                                        Sentiment & Hate Speech Analysis
+                                    </div>
+                                    <div class="flex items-center gap-3 text-red-400 text-sm">
+                                        <div class="w-2 h-2 bg-red-500 rounded-full"></div>
+                                        Cross-Reference Fact Checking
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item flex justify-start pt-10 md:pt-40 md:gap-10">
+                        <div class="sticky flex flex-col md:flex-row z-40 items-center top-40 self-start max-w-xs lg:max-w-sm md:w-full">
+                            <div class="h-10 absolute left-3 md:left-3 w-10 rounded-full bg-black flex items-center justify-center border border-red-500">
+                                <div class="h-4 w-4 rounded-full bg-red-500 border border-red-400 p-2"></div>
+                            </div>
+                            <h3 class="hidden md:block text-xl md:pl-20 md:text-5xl font-bold text-red-500 font-orbitron">Visual Verification</h3>
+                        </div>
+                        <div class="relative pl-20 pr-4 md:pl-4 w-full">
+                            <h3 class="md:hidden block text-2xl mb-4 text-left font-bold text-red-500 font-orbitron">Visual Verification</h3>
+                            <div>
+                                <p class="text-white text-sm md:text-base font-normal mb-6 leading-relaxed">
+                                    Deep learning models examine images and video frames for pixel-level inconsistencies typical of modern deepfake generation tools.
+                                </p>
+                                <div class="space-y-3">
+                                    <div class="flex items-center gap-3 text-red-400 text-sm">
+                                        <div class="w-2 h-2 bg-red-500 rounded-full"></div>
+                                        Face-Swap Detection
+                                    </div>
+                                    <div class="flex items-center gap-3 text-red-400 text-sm">
+                                        <div class="w-2 h-2 bg-red-500 rounded-full"></div>
+                                        Lip-Sync Inconsistency Detection
+                                    </div>
+                                    <div class="flex items-center gap-3 text-red-400 text-sm">
+                                        <div class="w-2 h-2 bg-red-500 rounded-full"></div>
+                                        Metadata & Exif Verification
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="safety"></section>
+
+        <section class="py-24 px-6 bg-card">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl font-bold text-card-foreground mb-4 font-sans">Trusted by Experts</h2>
+                    <p class="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+                        See what security leaders are saying about our detection technology
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="card glow-border slide-up p-6" style="animation-delay: 0s;">
+                        <p class="text-card-foreground mb-6 leading-relaxed italic">"The audio forensics agent detected a voice clone that bypassed our standard biometrics. This is essential tech for the modern age."</p>
+                        <div class="flex items-center gap-4">
+                            <div class="relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full">
+                                <img class="aspect-square h-full w-full" src="https://randomuser.me/api/portraits/women/44.jpg" alt="Dr. Sarah Chen">
+                            </div>
+                            <div>
+                                <p class="font-semibold text-primary">Dr. Sarah Chen</p>
+                                <p class="text-sm text-muted-foreground">Digital Forensics Expert</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card glow-border slide-up p-6" style="animation-delay: 0.15s;">
+                        <p class="text-card-foreground mb-6 leading-relaxed italic">"ForenSight's ability to trace the source of a viral misinformation campaign saved our firm from a major PR crisis."</p>
+                        <div class="flex items-center gap-4">
+                            <div class="relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full">
+                                <img class="aspect-square h-full w-full" src="https://randomuser.me/api/portraits/men/32.jpg" alt="Marcus Rodriguez">
+                            </div>
+                            <div>
+                                <p class="font-semibold text-primary">Marcus Rodriguez</p>
+                                <p class="text-sm text-muted-foreground">Investigative Journalist</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card glow-border slide-up p-6" style="animation-delay: 0.3s;">
+                        <p class="text-card-foreground mb-6 leading-relaxed italic">"The visual verification tools are intuitive. It highlights manipulated pixels instantly, making verification seamless."</p>
+                        <div class="flex items-center gap-4">
+                            <div class="relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full">
+                                <img class="aspect-square h-full w-full" src="https://randomuser.me/api/portraits/women/68.jpg" alt="Dr. Yuki Tanaka">
+                            </div>
+                            <div>
+                                <p class="font-semibold text-primary">Dr. Yuki Tanaka</p>
+                                <p class="text-sm text-muted-foreground">AI Ethics Researcher</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="faq" class="py-24 bg-black">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-16">
+                    <h2 class="text-4xl md:text-5xl font-bold text-white mb-6 font-orbitron">Frequently Asked Questions</h2>
+                    <p class="text-xl text-gray-300 max-w-3xl mx-auto font-mono">
+                        Get answers to common questions about ForenSight analysis, accuracy, and data privacy.
+                    </p>
+                </div>
+
+                <div class="max-w-4xl mx-auto space-y-4">
+                    <div class="border-b border-red-500/20">
+                        <button class="flex flex-1 items-center justify-between py-4 font-medium transition-all hover:text-red-400 text-left text-lg font-orbitron text-white w-full faq-trigger">
+                            How accurate is the Deepfake Detection?
+                            <i data-lucide="chevron-down" class="h-4 w-4 shrink-0 transition-transform duration-200"></i>
+                        </button>
+                        <div class="overflow-hidden text-sm transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down hidden faq-content">
+                            <div class="pb-4 pt-0 text-gray-300 leading-relaxed font-mono text-base">
+                                Our models are trained on the latest GAN and diffusion datasets, achieving over 98% accuracy in controlled benchmarks for both video and audio manipulation.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-b border-red-500/20">
+                        <button class="flex flex-1 items-center justify-between py-4 font-medium transition-all hover:text-red-400 text-left text-lg font-orbitron text-white w-full faq-trigger">
+                            How long does analysis take?
+                            <i data-lucide="chevron-down" class="h-4 w-4 shrink-0 transition-transform duration-200"></i>
+                        </button>
+                        <div class="overflow-hidden text-sm transition-all hidden faq-content">
+                            <div class="pb-4 pt-0 text-gray-300 leading-relaxed font-mono text-base">
+                                Text analysis is near-instant. Audio and video files typically process at 5x real-time speed (e.g., a 1-minute video takes about 12 seconds to analyze).
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-24 px-6 bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10">
+            <div class="max-w-4xl mx-auto text-center">
+                <div class="slide-up">
+                    <h2 class="text-5xl font-bold text-foreground mb-6 font-sans text-balance">Ready to Uncover the Truth?</h2>
+                    <p class="text-xl text-muted-foreground mb-10 leading-relaxed max-w-2xl mx-auto">
+                        Join leading journalists, security experts, and researchers who use ForenSight to verify digital reality.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                         <a href="dashboard.html" id="start-analysis-bottom-btn" class="bg-red-500 hover:bg-red-600 text-white font-sans font-medium text-lg px-8 py-4 rounded-md transition-colors pulse-button flex items-center justify-center">
+                            Start Analysis
+                        </a>
+                        <button class="border border-red-500 text-red-500 hover:bg-red-500 hover:text-white font-sans font-medium text-lg px-8 py-4 rounded-md transition-colors bg-transparent">
+                            View Demo
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-black border-t border-red-500/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div class="col-span-1 md:col-span-2">
+                    <h2 class="font-orbitron text-2xl font-bold text-white mb-4">
+                        Foren<span class="text-red-500">Sight</span>
+                    </h2>
+                    <p class="font-mono text-gray-300 mb-6 max-w-md">
+                        Pioneering the future of digital truth through advanced AI forensics and misinformation detection.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-red-500 transition-colors duration-200"><i data-lucide="twitter"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-red-500 transition-colors duration-200"><i data-lucide="github"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-red-500 transition-colors duration-200"><i data-lucide="linkedin"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-red-500 transition-colors duration-200"><i data-lucide="mail"></i></a>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="font-orbitron text-white font-semibold mb-4">Product</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#technology" class="font-mono text-gray-400 hover:text-red-500 transition-colors duration-200">Technology</a></li>
+                        <li><a href="#applications" class="font-mono text-gray-400 hover:text-red-500 transition-colors duration-200">Agents</a></li>
+                        <li><a href="#safety" class="font-mono text-gray-400 hover:text-red-500 transition-colors duration-200">Research</a></li>
+                        <li><a href="#faq" class="font-mono text-gray-400 hover:text-red-500 transition-colors duration-200">FAQ</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="font-orbitron text-white font-semibold mb-4">Company</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="font-mono text-gray-400 hover:text-red-500 transition-colors duration-200">About Us</a></li>
+                        <li><a href="#" class="font-mono text-gray-400 hover:text-red-500 transition-colors duration-200">Careers</a></li>
+                        <li><a href="#" class="font-mono text-gray-400 hover:text-red-500 transition-colors duration-200">Press</a></li>
+                        <li><a href="#" class="font-mono text-gray-400 hover:text-red-500 transition-colors duration-200">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="mt-8 pt-8 border-t border-red-500/20">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <p class="font-mono text-gray-400 text-sm">© 2025 ForenSight. All rights reserved.</p>
+                    <div class="flex space-x-6 mt-4 md:mt-0">
+                        <a href="#" class="font-mono text-gray-400 hover:text-red-500 text-sm transition-colors duration-200">Privacy Policy</a>
+                        <a href="#" class="font-mono text-gray-400 hover:text-red-500 text-sm transition-colors duration-200">Terms of Service</a>
+                        <a href="#" class="font-mono text-gray-400 hover:text-red-500 text-sm transition-colors duration-200">Cookie Policy</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        // Replace lucide icons now
+        if (window.lucide && typeof window.lucide.replace === 'function') {
+            try { window.lucide.replace(); } catch (e) { /* ignore */ }
+        } else {
+            window.addEventListener('load', () => {
+                if (window.lucide && typeof window.lucide.replace === 'function') {
+                    try { window.lucide.replace(); } catch (e) {}
+                }
+            });
+        }
+
+        // hide preloader after full page load (keeps it for a short animation)
+        window.addEventListener('load', function () {
+            const preloader = document.getElementById('preloader');
+            if (!preloader) return;
+            // keep preloader visible for 2s, then fade
+            setTimeout(() => {
+                preloader.classList.add('hidden');
+                setTimeout(() => {
+                    if (preloader.parentNode) preloader.parentNode.removeChild(preloader);
+                }, 1000);
+            }, 2000);
+        });
+
+        // mobile menu toggle
+        document.addEventListener('DOMContentLoaded', () => {
+            const mobileBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            if (mobileBtn && mobileMenu) {
+                mobileBtn.addEventListener('click', () => {
+                    mobileMenu.classList.toggle('hidden');
+                    // swap icon
+                    const icon = mobileMenu.classList.contains('hidden') ? 'menu' : 'x';
+                    mobileBtn.innerHTML = `<i data-lucide="${icon}"></i>`;
+                    if (window.lucide && typeof window.lucide.replace === 'function') window.lucide.replace();
+                });
+            }
+
+            // FAQ simple accordion
+            document.querySelectorAll('.faq-trigger').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const content = btn.nextElementSibling;
+                    if (!content) return;
+                    const isHidden = content.classList.contains('hidden');
+                    document.querySelectorAll('.faq-content').forEach(c => c.classList.add('hidden'));
+                    if (isHidden) content.classList.remove('hidden');
+                    else content.classList.add('hidden');
+                });
+            });
+        });
+    </script>
+
+    <script src="script.js"></script>
+</body>
+</html>
